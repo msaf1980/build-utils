@@ -1,7 +1,7 @@
 #!/bin/bash
 
 unset URL
-BRANCH=master
+unset BRANCH
 unset COMMIT
 unset NAME
 unset DIRURL
@@ -106,7 +106,10 @@ done
     echo "use dir or repo url" >&2
     exit 1
 }
-[ -n "${BRANCH}" ] || usage
+
+[ -n "${URL}" ] && {
+   [ -z "${BRANCH}" ] && BRANCH="master" || usage
+}
 
 [ -n "${NAME}" ] || {
     [ -n "${URL}" ] && {
@@ -133,7 +136,7 @@ if [ -n "${URL}" ]; then
     git_clone || exit 1
     git_commit || exit 1
 else
-    [ -n "${COMMIT}" -o -n "${BRANCH}"  ] && {
+    [ "${COMMIT}" != "" -o "${BRANCH}" != "" ] && {
        echo "can't use commit or branch with dir mode" >&2
        exit 1 
     } 
