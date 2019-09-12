@@ -131,12 +131,16 @@ if [ -n "${URL}" ]; then
 	rm -rf "${NAME}" || exit 1
     fi
     git_clone || exit 1
+    git_commit || exit 1
 else
+    [ -n "${COMMIT}" -o -n "${BRANCH}"  ] && {
+       echo "can't use commit or branch with dir mode" >&2
+       exit 1 
+    } 
     cd ${DIRURL} || exit 1
-    git_pull_branch || exit 1
+    #git_pull_branch || exit 1
 fi
 
-git_commit || exit 1
 git_version || exit 1
 
 printf "Version %s  Release %s Commit %s\n" "$VERSION" "$RELEASE" "$COMMIT"
