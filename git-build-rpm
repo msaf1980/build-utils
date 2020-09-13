@@ -108,7 +108,7 @@ done
 }
 
 [ -n "${URL}" ] && {
-   [ -z "${BRANCH}" ] && BRANCH="master" || usage
+   [ -z "${BRANCH}" ] && BRANCH="master"
 }
 
 [ -n "${NAME}" ] || {
