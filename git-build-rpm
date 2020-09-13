@@ -5,6 +5,7 @@ unset BRANCH
 unset COMMIT
 unset NAME
 unset DIRURL
+VERSION=""
 
 RPMBUILDDIR=${HOME}/rpmbuild
 SOURCEDIR=${RPMBUILDDIR}/SOURCES
@@ -25,11 +26,11 @@ git_pull_branch() {
 }
 
 git_version() {
-    unset VERSION
     unset RELEASE
     GIT_VERSION="$(git describe --always --tags | sed -e 's/^[a-z]*[-_]//g')" && {
         set -f; IFS='-' ; set -- ${GIT_VERSION}
-        VERSION=$1; [ -z "$3" ] && RELEASE=$2 || RELEASE=$2.$3
+        [ "${VERSION}" = "" ] && VERSION=$1
+        [ -z "$3" ] && RELEASE=$2 || RELEASE=$2.$3
         set +f; unset IFS
 
         [ "$RELEASE" == "" -a "$VERSION" != "" ] && {
@@ -75,7 +76,7 @@ usage() {
   exit 1
 }
 
-while getopts "n:u:d:b:c:s:h" opt ; do
+while getopts "n:u:d:b:c:s:v:h" opt ; do
     case $opt in
 	n)
 	    NAME="$OPTARG"
@@ -94,6 +95,9 @@ while getopts "n:u:d:b:c:s:h" opt ; do
 	    ;;
 	s)
 	    SPECFILE="$OPTARG"
+      ;;
+	v)
+	    VERSION="$OPTARG"      
 	    ;;
 	h)
 	    usage
