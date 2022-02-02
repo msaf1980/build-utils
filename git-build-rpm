@@ -97,12 +97,13 @@ while getopts "n:u:d:D:b:c:s:v:h" opt ; do
 	    ;;
 	s)
 	    SPECFILE="$OPTARG"
-      ;;
+        ;;
 	v)
 	    VERSION="$OPTARG"
 	    ;;
     D)
         DEFINES="${DEFINES} --define ${$OPTARG}"
+        ;;
 	h)
 	    usage
 	    ;;
