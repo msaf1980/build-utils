@@ -11,7 +11,7 @@ RPMBUILDDIR=${HOME}/rpmbuild
 SOURCEDIR=${RPMBUILDDIR}/SOURCES
 BUILDIR=${RPMBUILDDIR}/SOURCES
 
-DIR=$( pwd )
+DIR=$(pwd)
 
 git_clone() {
     git clone -b "${BRANCH}" --single-branch "${URL}" -o "${NAME}" || return 1
@@ -28,10 +28,13 @@ git_pull_branch() {
 git_version() {
     unset RELEASE
     GIT_VERSION="$(git describe --always --tags | sed -e 's/^[a-z]*[-_]//g')" && {
-        set -f; IFS='-' ; set -- ${GIT_VERSION}
+        set -f
+        IFS='-'
+        set -- ${GIT_VERSION}
         [ "${VERSION}" = "" ] && VERSION=$1
         [ -z "$3" ] && RELEASE=$2 || RELEASE=$2.$3
-        set +f; unset IFS
+        set +f
+        unset IFS
 
         [ "$RELEASE" == "" -a "$VERSION" != "" ] && {
             RELEASE=0.g${COMMIT:0:7}
@@ -50,7 +53,7 @@ git_version() {
 }
 
 git_last_commit() {
-    COMMIT=$( git log -n 1 --pretty=format:'%H' )
+    COMMIT=$(git log -n 1 --pretty=format:'%H')
     [ "$?" == "0" ] && return 0 || return 1
 }
 
@@ -63,51 +66,51 @@ git_commit() {
         NEEDCOMMIT="${COMMIT}"
         git_last_commit || return 1
         if [ "${NEEDCOMMIT}" != "${COMMIT}" ]; then
-    	    echo "unable to reset to ${NEEDCOMMIT}, current commit is ${COMMIT}" >&2
-    	    return 1
+            echo "unable to reset to ${NEEDCOMMIT}, current commit is ${COMMIT}" >&2
+            return 1
         fi
     fi
     return 0
 }
 
 usage() {
-  echo "use: $0 [-u GIT_URL | -d DIR] [-n NAME]  [-b BRANCH] [-c COMMIT] [-s SPEC_FILE]" >&2
-  echo "  by default spec file location in SOURCE with repo name" >&2
-  exit 1
+    echo "use: $0 [-u GIT_URL | -d DIR] [-n NAME]  [-b BRANCH] [-c COMMIT] [-s SPEC_FILE]" >&2
+    echo "  by default spec file location in SOURCE with repo name" >&2
+    exit 1
 }
 
 DEFINES=""
 
-while getopts "n:u:d:D:b:c:s:v:h" opt ; do
+while getopts "n:u:d:D:b:c:s:v:h" opt; do
     case $opt in
-	n)
-	    NAME="$OPTARG"
-	    ;;
-	u)
-	    URL="$OPTARG"
-	    ;;
-	d)
-	    DIRURL="$OPTARG"
-	    ;;
-	b)
-	    BRANCH="$OPTARG"
-	    ;;
-	c)
-	    COMMIT="$OPTARG"
-	    ;;
-	s)
-	    SPECFILE="$OPTARG"
+    n)
+        NAME="$OPTARG"
         ;;
-	v)
-	    VERSION="$OPTARG"
-	    ;;
+    u)
+        URL="$OPTARG"
+        ;;
+    d)
+        DIRURL="$OPTARG"
+        ;;
+    b)
+        BRANCH="$OPTARG"
+        ;;
+    c)
+        COMMIT="$OPTARG"
+        ;;
+    s)
+        SPECFILE="$OPTARG"
+        ;;
+    v)
+        VERSION="$OPTARG"
+        ;;
     D)
-        DEFINES="${DEFINES} --define ${$OPTARG}"
+        DEFINES="${DEFINES} --define ${OPTARG}"
         ;;
-	h)
-	    usage
-	    ;;
-esac
+    h)
+        usage
+        ;;
+    esac
 done
 
 [ -z "${URL}" -a -z "${DIRURL}" ] && usage
@@ -117,14 +120,14 @@ done
 }
 
 [ -n "${URL}" ] && {
-   [ -z "${BRANCH}" ] && BRANCH="master"
+    [ -z "${BRANCH}" ] && BRANCH="master"
 }
 
 [ -n "${NAME}" ] || {
     [ -n "${URL}" ] && {
-        NAME=$( basename ${URL} | sed -e 's/\.git$//' )
+        NAME=$(basename ${URL} | sed -e 's/\.git$//')
     } || {
-	NAME=$( basename ${DIRURL} | sed -e 's/\.git$//' )
+        NAME=$(basename ${DIRURL} | sed -e 's/\.git$//')
     }
 }
 
@@ -140,15 +143,15 @@ done
 
 if [ -n "${URL}" ]; then
     if [ -d "${NAME}" ]; then
-	rm -rf "${NAME}" || exit 1
+        rm -rf "${NAME}" || exit 1
     fi
     git_clone || exit 1
     git_commit || exit 1
 else
     [ "${COMMIT}" != "" -o "${BRANCH}" != "" ] && {
-       echo "can't use commit or branch with dir mode" >&2
-       exit 1 
-    } 
+        echo "can't use commit or branch with dir mode" >&2
+        exit 1
+    }
     cd ${DIRURL} || exit 1
     git_last_commit || exit 1
     #git_pull_branch || exit 1
@@ -167,17 +170,15 @@ cd .. || exit 1
 echo "create ${SOURCEDIR}/${NAME}-${VERSION}.${RELEASE}.tbz"
 tar -cjf "${SOURCEDIR}/${NAME}-${VERSION}.${RELEASE}.tbz" --exclude .git "${NAME}" || exit 1
 [ -d SOURCES ] && {
-    cp -f SOURCES/* "${SOURCEDIR}/"  || exit 1
+    cp -f SOURCES/* "${SOURCEDIR}/" || exit 1
 }
-
-
 
 cd "${SOURCEDIR}" && {
     rpmbuild -ba "${SPECFILE}" --define "vers ${VERSION}" --define "rel ${RELEASE}" --define "commit ${COMMIT}" ${DEFINES} || {
-    echo "Build failed !! Fix and run" >&2
-    echo rpmbuild -ba \"${SPECFILE}\" --define \"vers ${VERSION}\" --define \"rel ${RELEASE}\" --define \"commit ${COMMIT}\" >&2
-    exit 1
-  }
+        echo "Build failed !! Fix and run" >&2
+        echo rpmbuild -ba \"${SPECFILE}\" --define \"vers ${VERSION}\" --define \"rel ${RELEASE}\" --define \"commit ${COMMIT}\" >&2
+        exit 1
+    }
 } || {
     exit 1
 }
