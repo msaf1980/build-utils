@@ -34,8 +34,8 @@ git_version() {
         set +f; unset IFS
 
         [ "$RELEASE" == "" -a "$VERSION" != "" ] && {
-	    RELEASE=0.g${COMMIT:0:7}
-	}
+            RELEASE=0.g${COMMIT:0:7}
+        }
 
         if echo $VERSION | egrep '^v[0-9]+\.[0-9]+(\.[0-9]+)?$' >/dev/null; then
             VERSION=${VERSION:1:${#VERSION}}
@@ -76,7 +76,9 @@ usage() {
   exit 1
 }
 
-while getopts "n:u:d:b:c:s:v:h" opt ; do
+DEFINES=""
+
+while getopts "n:u:d:D:b:c:s:v:h" opt ; do
     case $opt in
 	n)
 	    NAME="$OPTARG"
@@ -97,8 +99,10 @@ while getopts "n:u:d:b:c:s:v:h" opt ; do
 	    SPECFILE="$OPTARG"
       ;;
 	v)
-	    VERSION="$OPTARG"      
+	    VERSION="$OPTARG"
 	    ;;
+    D)
+        DEFINES="${DEFINES} --define ${$OPTARG}"
 	h)
 	    usage
 	    ;;
@@ -168,7 +172,7 @@ tar -cjf "${SOURCEDIR}/${NAME}-${VERSION}.${RELEASE}.tbz" --exclude .git "${NAME
 
 
 cd "${SOURCEDIR}" && {
-    rpmbuild -ba "${SPECFILE}" --define "vers ${VERSION}" --define "rel ${RELEASE}" --define "commit ${COMMIT}" || {
+    rpmbuild -ba "${SPECFILE}" --define "vers ${VERSION}" --define "rel ${RELEASE}" --define "commit ${COMMIT}" ${DEFINES} || {
     echo "Build failed !! Fix and run" >&2
     echo rpmbuild -ba \"${SPECFILE}\" --define \"vers ${VERSION}\" --define \"rel ${RELEASE}\" --define \"commit ${COMMIT}\" >&2
     exit 1
